@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+  userservice:
+    image: zhanchengdev/userservice:latest
+    restart: always
+    ports: 
+      - 3005:3005
+    environment:
+      PG_USERNAME: postgres
+      PG_PASSWORD: ${PG_PASSWORD}
+      PG_DBNAME: TwitterUser
+      DB_TYPE: postgres
+      DB_HOST: pgdb
+      DB_PORT: 5432
+      JWT_SECRET: ${JWT_SECRET}
+      SERVER_PORT: 3005
+
+  pgdb:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DBNAME}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8081:8080
+volumes:
+    db-data:
