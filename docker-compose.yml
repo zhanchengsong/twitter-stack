@@ -9,7 +9,7 @@ services:
     environment:
       PG_USERNAME: postgres
       PG_PASSWORD: ${PG_PASSWORD}
-      PG_DBNAME: TwitterUser
+      PG_DBNAME: ${PG_DBNAME}
       DB_TYPE: postgres
       DB_HOST: pgdb
       DB_PORT: 5432
