@@ -4,8 +4,15 @@ services:
   twitter-web:
     image: zhanchengdev/twitter-web:latest
     restart: always
+    environment:
+      AWS_ACCESS_KEY_ID: ${NODE_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${NODE_AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_USER_ICON_BUCKET: ${AWS_USER_ICON_BUCKET}
+      PORT: ${NODE_PORT}
+      ENV_TYPE : docker
     ports:
-      - 3001:3001
+      - ${NODE_PORT}:${NODE_PORT}
     depends_on:
       - userservice
     
@@ -24,6 +31,10 @@ services:
       DB_HOST: pgdb
       DB_PORT: 5432
       JWT_SECRET: ${JWT_SECRET}
+      AWS_ACCESS_KEY_ID: ${GO_AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${GO_AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_USER_ICON_BUCKET: ${AWS_USER_ICON_BUCKET}
       SERVER_PORT: 3005
 
   pgdb:
