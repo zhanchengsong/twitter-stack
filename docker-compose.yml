@@ -31,12 +31,11 @@ services:
       DB_HOST: pgdb
       DB_PORT: 5432
       JWT_SECRET: ${JWT_SECRET}
-      AWS_ACCESS_KEY_ID: ${GO_AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${GO_AWS_SECRET_ACCESS_KEY}
-      AWS_REGION: ${AWS_REGION}
-      AWS_USER_ICON_BUCKET: ${AWS_USER_ICON_BUCKET}
       SERVER_PORT: 3005
-
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: AKIATTWZPVHYKOAABEWU
+      AWS_SECRET_ACCESS_KEY: 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
+      AWS_USER_ICON_BUCKET: twitter-icons
   pgdb:
     image: postgres
     restart: always
@@ -73,11 +72,65 @@ services:
     volumes:
       - ./config/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - mongo-data:/data/db
+  
+  portainer:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    ports:
+      - 9000:9000
+      - 8000:8000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
   redis:
     image: redis
     ports:
       - 6379:6379
+
+  zookeeper:
+    image: 'docker.io/bitnami/zookeeper:3-debian-10'
+    ports:
+      - '2181:2181'
+    volumes:
+      - 'zookeeper_data:/bitnami'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: 'docker.io/bitnami/kafka:2-debian-10'
+    ports:
+      - '9092:9092'
+      - '9093:9093'
+    volumes:
+      - 'kafka_data:/bitnami'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper
+  # DONOTCOMMIT !
+  tweet:
+    image: zhanchengdev/tweet:latest
+    ports:
+      - '3008:3008'
+    environment:
+      - SPRING_PROFILES_ACTIVE=kube
+      - MONGO_URL=mongodb+srv://twitter-spring:bocJmhrOsJQDgaqh@twitterdata.94hzj.mongodb.net/twitter-data?retryWrites=true&w=majority  
+      - AWS_SQS_URL=https://sqs.us-east-1.amazonaws.com/248490469872/Twitter-Notifications
+      - AWS_ACCESS_KEY=AKIATTWZPVHYID2QI66Q 
+      - AWS_ACCESS_KEY_SECRET=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 
+      - AWS_REGION=us-east-1
+      - KAFKA_BOOTSTRAP=kafka:9092
+    depends_on:
+      - kafka
 volumes:
     redis-data:
     db-data:
     mongo-data:
+    portainer_data:
+    zookeeper_data:
+    kafka_data:
